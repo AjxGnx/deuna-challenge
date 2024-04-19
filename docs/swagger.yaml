@@ -1,0 +1,203 @@
+basePath: /api/exercise
+definitions:
+  dto.MessageError:
+    properties:
+      message:
+        type: string
+    type: object
+  dto.Refund:
+    properties:
+      transaction_id:
+        type: integer
+    type: object
+  dto.Transaction:
+    properties:
+      amount:
+        type: number
+      customer_id:
+        type: integer
+      merchant_id:
+        type: integer
+    type: object
+  dto.UpdateTransaction:
+    properties:
+      error_code:
+        type: string
+      error_message:
+        type: string
+      error_type:
+        type: string
+      id:
+        type: integer
+      payment_method:
+        type: string
+      status:
+        type: string
+    type: object
+  entity.Transaction:
+    properties:
+      amount:
+        type: number
+      client_secret:
+        type: string
+      id:
+        type: integer
+      merchant_id:
+        type: integer
+      payment_method:
+        type: string
+      payment_source:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
+  handler.Health:
+    properties:
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+info:
+  contact: {}
+  description: Deuna Challenge Manager
+  license:
+    name: Alirio Gutierrez
+  title: Deuna Challenge
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      description: health service
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Health'
+      summary: Check if service is active
+      tags:
+      - Health
+  /transactions/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get transaction by ID
+      parameters:
+      - description: value of transaction to find
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Transaction'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageError'
+      summary: Get by ID
+      tags:
+      - Transactions
+    put:
+      consumes:
+      - application/json
+      description: Update transaction by ID (to run this acction you need to know
+        the state of a transaction "payment intent")
+      parameters:
+      - description: Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTransaction'
+      - description: value of transaction to update
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Transaction'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageError'
+      summary: Update By ID
+      tags:
+      - Transactions
+  /transactions/stripe/intent:
+    post:
+      consumes:
+      - application/json
+      description: Create a payment intent with stripe
+      parameters:
+      - description: Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Transaction'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.MessageError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageError'
+      summary: Create payment intent
+      tags:
+      - Transactions
+  /transactions/stripe/refund:
+    post:
+      consumes:
+      - application/json
+      description: Create a refund with stripe (to run this method the transaction
+        needs to be succeeded in stripe)
+      parameters:
+      - description: Request Body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Refund'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Transaction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.MessageError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.MessageError'
+      summary: Create refund
+      tags:
+      - Transactions
+schemes:
+- http
+swagger: "2.0"
